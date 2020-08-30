@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from "express";
+import path from "path";
 import cors from "cors";
 import Db from "mongodb";
 import { config } from "dotenv";
@@ -15,6 +16,7 @@ client.connect();
 const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "../../client/build")));
 app.use(cors());
 app.get("/api/users", async (_req: Request, res: Response) => {
     const Users = client.db().collection("users");
@@ -47,5 +49,8 @@ app.get("/api/workshops", async (_req: Request, res: Response) => {
         return res.status(500).json(error);
     }
 });
+const p = path.join(__dirname, "../../client", "build", "index.html");
+console.log(p);
+app.get("/", (_req, res) => res.sendFile(p));
 
 app.listen(8000, () => console.log("Server is running on port 8000"));

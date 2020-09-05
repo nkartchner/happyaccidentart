@@ -1,29 +1,19 @@
 import React from "react";
-import { FireCtx } from "../FirestoreContext";
 import { Typography, List, ListItem, ListItemText } from "@material-ui/core";
+import Axios from "axios";
 
 type IQuotes = { [key: string]: string[] };
 
 const Quotes: React.FC = (): React.ReactElement => {
-    const firebase = React.useContext(FireCtx);
     const [quotes, setQuotes] = React.useState<IQuotes>({});
     React.useEffect(() => {
-        const unsub = firebase.firestore
-            .collection("quotes")
-            .onSnapshot(snap => {
-                let q: IQuotes = {};
-                snap.forEach(doc => {
-                    const d: { [key: string]: string[] } = doc.data();
-                    Object.keys(d).forEach(name => {
-                        q[name] = d[name];
-                    });
-                });
-                setQuotes(q);
-            });
-        return () => {
-            unsub();
-        };
-    }, [firebase, setQuotes]);
+        Axios.get<{ quotes: IQuotes }>("http://localhost:8081/api/quotes")
+            .then(({ data }) => {
+                setQuotes(data.quotes);
+            })
+            .catch(err => console.log("Something bad happened", err));
+    }, [setQuotes]);
+
     return (
         <div style={{ padding: 16 }}>
             {Object.keys(quotes).map(artistName => (

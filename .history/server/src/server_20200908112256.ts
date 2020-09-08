@@ -299,13 +299,11 @@ app.post(
         try {
             const workshop = await Workshop.create(req.body.workshop);
             if (!req.body.workshop.isOnline) {
-                await workshop.createAddress(req.body.address);
+                workshop["address"] = await workshop.createAddress(
+                    req.body.address
+                );
             }
-            res.status(200).json({
-                workshop: await Workshop.findByPk(workshop.id, {
-                    include: [Workshop.associations.address],
-                }),
-            });
+            res.status(200).json({ workshop });
         } catch (error) {
             return next(error);
         }
@@ -313,10 +311,8 @@ app.post(
 );
 app.put(
     "/api/workshops/:id",
-    (req: Request, res: Response, next: NextFunction) => {
-        Workshop.update(req.body, { where: { id: req.params.id } })
-            .then(() => res.status(200).json({ message: "Success" }))
-            .catch(err => next(err));
+    (_req: Request, res: Response, next: NextFunction) => {
+        res.status(200).json({ workshops: {} });
     }
 );
 app.delete(

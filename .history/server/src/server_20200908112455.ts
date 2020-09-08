@@ -313,10 +313,8 @@ app.post(
 );
 app.put(
     "/api/workshops/:id",
-    (req: Request, res: Response, next: NextFunction) => {
-        Workshop.update(req.body, { where: { id: req.params.id } })
-            .then(() => res.status(200).json({ message: "Success" }))
-            .catch(err => next(err));
+    (_req: Request, res: Response, next: NextFunction) => {
+        res.status(200).json({ workshops: {} });
     }
 );
 app.delete(

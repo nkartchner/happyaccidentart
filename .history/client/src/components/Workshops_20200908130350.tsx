@@ -9,13 +9,15 @@ import Collapse from "@material-ui/core/Collapse";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import Delete from "@material-ui/icons/Delete";
+// import Fab from "@material-ui/core/Fab";
+// import AddIcon from "@material-ui/icons/Add";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import axios from "axios";
 import WorkshopForm from "./WorkshopForm";
-import { Workshop } from "../models/workshop";
+import emptyWorkshop, { Workshop } from "../models/workshop";
 import { Address } from "../models/address";
 import Axios from "axios";
 
@@ -35,7 +37,6 @@ const MONTHS = [
 ];
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
-        container: { padding: 20, overflow: "auto" },
         addBtn: {
             gridColumn: 2,
             position: "absolute",
@@ -93,28 +94,9 @@ const useStyles = makeStyles((theme: Theme) =>
         detailsDesc: {
             gridColumn: 2,
         },
-        loadingCircle: {
-            alignItems: "center",
-            justifyContent: "center",
-            display: "flex",
-            width: 300,
-            minHeight: 200,
-            transitionProperty: "width",
-            transitionDelay: "1s",
-            transitionDuration: "2s",
-            transitionTimingFunction: "linear",
-        },
         coverImg: {
             borderRadius: 3,
-            width: 0,
-            transitionProperty: "width",
-            transitionDelay: "100ms",
-            transitionDuration: "200ms",
-            transitionTimingFunction: "linear",
-        },
-
-        loaded: {
-            width: 360,
+            maxWidth: 360,
         },
         deleteIcon: {
             marginRight: theme.spacing(2),
@@ -135,17 +117,11 @@ const WorkshopDetails: React.FC<{
         <div className={classes.detailsContainer}>
             <div className={classes.details}>
                 <Typography variant="body1">What we're painting:</Typography>
-                {isLoading && (
-                    <div className={classes.loadingCircle}>
-                        <CircularProgress />
-                    </div>
-                )}
+                {isLoading && <CircularProgress />}
                 <img
                     onLoad={handleLoaded}
                     src={workshop.coverImage}
-                    className={clsx(classes.coverImg, {
-                        [classes.loaded]: !isLoading,
-                    })}
+                    className={classes.coverImg}
                     alt="workshop goal"
                 />
             </div>
@@ -169,9 +145,7 @@ const WorkshopDetails: React.FC<{
 
 const Workshops: React.FC = (): React.ReactElement => {
     const classes = useStyles();
-    const [selectedWorkshop, setSelectedWorkshop] = React.useState<
-        Workshop | undefined
-    >(undefined);
+
     const [isAdding, setIsAdding] = React.useState<boolean>(false);
     const [open, setOpen] = React.useState<number | false>(false);
 
@@ -196,21 +170,16 @@ const Workshops: React.FC = (): React.ReactElement => {
             });
     }, [setWorkshops]);
 
-    const handleSubmitNewWorkshop = (workshop: Workshop, address?: Address) => {
-        if (workshop.id > 0) return handleEdit(workshop);
-        else
-            Axios.post<{ workshop: Workshop }>(
-                "http://localhost:8081/api/workshops",
-                { workshop, address }
-            )
-                .then(({ data }) => {
-                    console.log(
-                        "Got the data back after creating something",
-                        data
-                    );
-                    setWorkshops([...workshops, data.workshop]);
-                })
-                .catch(err => console.log("Something went very wrong", err));
+    const handleSubmitNewWorkshop = (workshop: Workshop, address: Address) => {
+        Axios.post<{ workshop: Workshop }>(
+            "http://localhost:8081/api/workshops",
+            { workshop, address }
+        )
+            .then(({ data }) => {
+                console.log("Got the data back after creating something", data);
+                setWorkshops([...workshops, data.workshop]);
+            })
+            .catch(err => console.log("Something went very wrong", err));
     };
 
     const handleDelete = (id: number) => (
@@ -224,29 +193,17 @@ const Workshops: React.FC = (): React.ReactElement => {
             })
             .catch(err => console.log("Something went very wrong", err));
     };
-    const handleEdit = (workshop: Workshop) => {
-        Axios.put(
-            "http://localhost:8081/api/workshops/" + workshop.id,
-            workshop
-        )
-            .then(() => {
-                setWorkshops(
-                    workshops.map(w => (w.id === workshop.id ? workshop : w))
-                );
-                setIsAdding(false);
-            })
-            .catch(err =>
-                console.log("Something happened when trying to edit", err)
-            );
-    };
+    const editForm = (workshop: Workshop = emptyWorkshop()) => (
+        <WorkshopForm
+            submitNewWorkshop={handleSubmitNewWorkshop}
+            cancel={() => setIsAdding(false)}
+            workshop={workshop}
+        />
+    );
     return (
-        <div className={classes.container}>
+        <div style={{ padding: 20, overflow: "auto" }}>
             {isAdding ? (
-                <WorkshopForm
-                    submitNewWorkshop={handleSubmitNewWorkshop}
-                    cancel={() => setIsAdding(false)}
-                    workshop={selectedWorkshop}
-                />
+                editForm()
             ) : (
                 <Button
                     onClick={() => setIsAdding(true)}
@@ -299,13 +256,7 @@ const Workshops: React.FC = (): React.ReactElement => {
                             {open === i ? <ExpandLess /> : <ExpandMore />}
                         </ListItem>
                         <Collapse in={open === i} timeout="auto">
-                            <WorkshopDetails
-                                workshop={e}
-                                editForm={e => {
-                                    setSelectedWorkshop(e);
-                                    setIsAdding(true);
-                                }}
-                            />
+                            <WorkshopDetails workshop={e} editForm={editForm} />
                         </Collapse>
                     </div>
                 ))}

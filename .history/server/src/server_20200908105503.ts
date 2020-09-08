@@ -75,7 +75,7 @@ class Workshop
     public getAddress!: HasOneGetAssociationMixin<Address>;
     public createAddress!: HasOneCreateAssociationMixin<Address>;
     public setAddress!: HasOneSetAssociationMixin<Address, number>;
-    public static associations: {
+    public static assiciations: {
         users: Association<Workshop, User>;
         address: Association<Workshop, Address>;
     };
@@ -189,8 +189,8 @@ Address.init(
         updatedAt: false,
     }
 );
-Workshop.hasOne(Address, { as: "address", sourceKey: "id" });
-Address.belongsTo(Workshop, { targetKey: "id" });
+Workshop.hasOne(Address, { as: "address" });
+Address.belongsTo(Workshop);
 
 User.belongsToMany(Workshop, { through: "UserWorkshops", onDelete: "cascade" });
 Workshop.belongsToMany(User, { through: "UserWorkshops", onDelete: "cascade" });
@@ -213,6 +213,7 @@ app.use(cors());
 app.post(
     "/api/users",
     async (req: Request, res: Response, next: NextFunction) => {
+        // req.body = { email: "fdshfjshfd", name: "shdjafjhsadflh" }
         try {
             const newUser = await User.create({
                 email: req.body.email,
@@ -286,7 +287,7 @@ app.delete(
 app.get(
     "/api/workshops",
     (_req: Request, res: Response, next: NextFunction) => {
-        Workshop.findAll({ include: [Workshop.associations.address] }).then(
+        Workshop.findAll({ include: Workshop.assiciations.address }).then(
             workshops => {
                 res.status(200).json({ workshops });
             }
@@ -297,15 +298,11 @@ app.post(
     "/api/workshops",
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const workshop = await Workshop.create(req.body.workshop);
             if (!req.body.workshop.isOnline) {
-                await workshop.createAddress(req.body.address);
+                await Address.create(req.body.address);
             }
-            res.status(200).json({
-                workshop: await Workshop.findByPk(workshop.id, {
-                    include: [Workshop.associations.address],
-                }),
-            });
+            const workshop = await Workshop.create(req.body.workshop);
+            res.status(200).json({ workshop });
         } catch (error) {
             return next(error);
         }
@@ -313,10 +310,8 @@ app.post(
 );
 app.put(
     "/api/workshops/:id",
-    (req: Request, res: Response, next: NextFunction) => {
-        Workshop.update(req.body, { where: { id: req.params.id } })
-            .then(() => res.status(200).json({ message: "Success" }))
-            .catch(err => next(err));
+    (_req: Request, res: Response, next: NextFunction) => {
+        res.status(200).json({ workshops: {} });
     }
 );
 app.delete(

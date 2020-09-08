@@ -38,22 +38,18 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 interface WorkshopFormProps {
-    submitNewWorkshop: (workshop: Workshop, address?: Address) => void;
+    submitNewWorkshop: (workshop: Workshop, address: Address) => void;
     cancel: () => void;
-    workshop?: Workshop;
 }
 
 const WorkshopForm: React.FC<WorkshopFormProps> = ({
     cancel,
     submitNewWorkshop,
-    workshop = emptyWorkshop(),
 }): React.ReactElement => {
     const classes = useStyles();
 
-    const [form, setForm] = React.useState<Workshop>(workshop);
-    const [address, setAddress] = React.useState<Address>(
-        workshop.address || emptyAddress()
-    );
+    const [form, setForm] = React.useState<Workshop>(emptyWorkshop());
+    const [address, setAddress] = React.useState<Address>(emptyAddress());
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAddress({ ...address, [e.target.name]: e.target.value });
     };
@@ -71,6 +67,8 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({
         submitNewWorkshop(form, address);
     };
     const handleCancel = () => {
+        // setForm(emptyWorkshop());
+        // setAddress(emptyAddress());
         cancel();
     };
     return (

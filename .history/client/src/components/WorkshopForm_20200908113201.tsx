@@ -5,9 +5,6 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import emptyAddress, { Address } from "../models/address";
 import { DateTimePicker } from "@material-ui/pickers";
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-
-type ChangeEvent = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -38,30 +35,23 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 interface WorkshopFormProps {
-    submitNewWorkshop: (workshop: Workshop, address?: Address) => void;
+    submitNewWorkshop: (workshop: Workshop, address: Address) => void;
     cancel: () => void;
-    workshop?: Workshop;
 }
 
 const WorkshopForm: React.FC<WorkshopFormProps> = ({
     cancel,
     submitNewWorkshop,
-    workshop = emptyWorkshop(),
 }): React.ReactElement => {
     const classes = useStyles();
 
-    const [form, setForm] = React.useState<Workshop>(workshop);
-    const [address, setAddress] = React.useState<Address>(
-        workshop.address || emptyAddress()
-    );
+    const [form, setForm] = React.useState<Workshop>(emptyWorkshop());
+    const [address, setAddress] = React.useState<Address>(emptyAddress());
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAddress({ ...address, [e.target.name]: e.target.value });
     };
-    const handleChange = (e: ChangeEvent) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-    };
-    const handleDateChange = (e: MaterialUiPickersDate) => {
-        if (e) setForm({ ...form, date: new Date(e) });
     };
     const handleCheckboxChange = () => {
         setForm({ ...form, isOnline: !form.isOnline });
@@ -71,6 +61,8 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({
         submitNewWorkshop(form, address);
     };
     const handleCancel = () => {
+        // setForm(emptyWorkshop());
+        // setAddress(emptyAddress());
         cancel();
     };
     return (
@@ -84,15 +76,15 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({
                 required
                 color="secondary"
             />
-
-            <DateTimePicker
-                label="DateTimePicker"
-                inputVariant="outlined"
-                value={form.date}
-                name="date"
-                onChange={e => handleDateChange(e)}
-            />
-
+            <React.Fragment>
+                <DateTimePicker
+                    label="DateTimePicker"
+                    inputVariant="outlined"
+                    value={form.date}
+                    name="date"
+                    onChange={handleChange}
+                />
+            </React.Fragment>
             {/* <div> */}
             {/* <input id="coverImage" hidden type="file" accept="image/*" />
                 <label htmlFor="coverImage">

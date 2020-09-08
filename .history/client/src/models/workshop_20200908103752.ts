@@ -1,5 +1,3 @@
-import { Address } from "./address";
-
 export interface Workshop {
     id: number;
     desc: string;
@@ -8,7 +6,6 @@ export interface Workshop {
     capacity: number;
     isOnline: boolean;
     date: Date;
-    address?: Address;
 }
 
 const emptyWorkshop = (): Workshop => ({

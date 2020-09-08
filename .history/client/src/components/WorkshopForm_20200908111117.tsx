@@ -3,11 +3,8 @@ import { TextField, Button, Checkbox } from "@material-ui/core";
 import emptyWorkshop, { Workshop } from "../models/workshop";
 import { makeStyles, createStyles, Theme } from "@material-ui/core";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Axios from "axios";
 import emptyAddress, { Address } from "../models/address";
-import { DateTimePicker } from "@material-ui/pickers";
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-
-type ChangeEvent = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -22,57 +19,35 @@ const useStyles = makeStyles((theme: Theme) =>
         fullCol: {
             gridColumn: "1 / -1",
         },
-        actions: {
-            justifyContent: "end",
-            gridColumn: 2,
-            display: "inline-block",
-            justifySelf: "end",
-        },
         submitBtn: {
-            margin: theme.spacing(0, 1),
-        },
-
-        cancelBtn: {
-            margin: theme.spacing(0, 1),
+            justifySelf: "end",
+            gridColumn: 2,
         },
     })
 );
 interface WorkshopFormProps {
-    submitNewWorkshop: (workshop: Workshop, address?: Address) => void;
-    cancel: () => void;
-    workshop?: Workshop;
+    submitNewWorkshop: (workshop: Workshop) => void;
+    setIsAdding: () => void;
 }
 
-const WorkshopForm: React.FC<WorkshopFormProps> = ({
-    cancel,
-    submitNewWorkshop,
-    workshop = emptyWorkshop(),
-}): React.ReactElement => {
+const WorkshopForm: React.FC<WorkshopFormProps> = ({ setIsAdding, submitNewWorkshop }): React.ReactElement => {
     const classes = useStyles();
-
-    const [form, setForm] = React.useState<Workshop>(workshop);
-    const [address, setAddress] = React.useState<Address>(
-        workshop.address || emptyAddress()
-    );
+    const [form, setForm] = React.useState<Workshop>(emptyWorkshop());
+    const [address, setAddress] = React.useState<Address>(emptyAddress());
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAddress({ ...address, [e.target.name]: e.target.value });
     };
-    const handleChange = (e: ChangeEvent) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-    };
-    const handleDateChange = (e: MaterialUiPickersDate) => {
-        if (e) setForm({ ...form, date: new Date(e) });
     };
     const handleCheckboxChange = () => {
         setForm({ ...form, isOnline: !form.isOnline });
     };
     const handleSubmit = () => {
         // ! Validation goes here
-        submitNewWorkshop(form, address);
+        submitNewWorkshop(form, address)
     };
-    const handleCancel = () => {
-        cancel();
-    };
+
     return (
         <div className={classes.root}>
             <TextField
@@ -83,14 +58,6 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({
                 label="Title"
                 required
                 color="secondary"
-            />
-
-            <DateTimePicker
-                label="DateTimePicker"
-                inputVariant="outlined"
-                value={form.date}
-                name="date"
-                onChange={e => handleDateChange(e)}
             />
 
             {/* <div> */}
@@ -201,24 +168,14 @@ const WorkshopForm: React.FC<WorkshopFormProps> = ({
                     />
                 </>
             )}
-            <div className={classes.actions}>
-                <Button
-                    onClick={handleCancel}
-                    className={classes.cancelBtn}
-                    color="secondary"
-                    variant="contained"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={handleSubmit}
-                    className={classes.submitBtn}
-                    color="primary"
-                    variant="contained"
-                >
-                    Submit
-                </Button>
-            </div>
+            <Button
+                onClick={handleSubmit}
+                className={classes.submitBtn}
+                color="secondary"
+                variant="contained"
+            >
+                Submit
+            </Button>
         </div>
     );
 };

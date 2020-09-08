@@ -93,28 +93,20 @@ const useStyles = makeStyles((theme: Theme) =>
         detailsDesc: {
             gridColumn: 2,
         },
+        coverImg: {
+            borderRadius: 3,
+            maxWidth: 360,
+            display: "none",
+        },
         loadingCircle: {
-            alignItems: "center",
+            alignContent: "center",
             justifyContent: "center",
             display: "flex",
             width: 300,
-            minHeight: 200,
-            transitionProperty: "width",
-            transitionDelay: "1s",
-            transitionDuration: "2s",
-            transitionTimingFunction: "linear",
+            height: 300,
         },
-        coverImg: {
-            borderRadius: 3,
-            width: 0,
-            transitionProperty: "width",
-            transitionDelay: "100ms",
-            transitionDuration: "200ms",
-            transitionTimingFunction: "linear",
-        },
-
         loaded: {
-            width: 360,
+            display: "unset",
         },
         deleteIcon: {
             marginRight: theme.spacing(2),
@@ -129,7 +121,7 @@ const WorkshopDetails: React.FC<{
     const classes = useStyles();
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
     const handleLoaded = () => {
-        setIsLoading(false);
+        setIsLoading(true);
     };
     return (
         <div className={classes.detailsContainer}>

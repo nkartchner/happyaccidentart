@@ -93,28 +93,9 @@ const useStyles = makeStyles((theme: Theme) =>
         detailsDesc: {
             gridColumn: 2,
         },
-        loadingCircle: {
-            alignItems: "center",
-            justifyContent: "center",
-            display: "flex",
-            width: 300,
-            minHeight: 200,
-            transitionProperty: "width",
-            transitionDelay: "1s",
-            transitionDuration: "2s",
-            transitionTimingFunction: "linear",
-        },
         coverImg: {
             borderRadius: 3,
-            width: 0,
-            transitionProperty: "width",
-            transitionDelay: "100ms",
-            transitionDuration: "200ms",
-            transitionTimingFunction: "linear",
-        },
-
-        loaded: {
-            width: 360,
+            maxWidth: 360,
         },
         deleteIcon: {
             marginRight: theme.spacing(2),
@@ -135,17 +116,11 @@ const WorkshopDetails: React.FC<{
         <div className={classes.detailsContainer}>
             <div className={classes.details}>
                 <Typography variant="body1">What we're painting:</Typography>
-                {isLoading && (
-                    <div className={classes.loadingCircle}>
-                        <CircularProgress />
-                    </div>
-                )}
+                {isLoading && <CircularProgress />}
                 <img
                     onLoad={handleLoaded}
                     src={workshop.coverImage}
-                    className={clsx(classes.coverImg, {
-                        [classes.loaded]: !isLoading,
-                    })}
+                    className={classes.coverImg}
                     alt="workshop goal"
                 />
             </div>
@@ -229,11 +204,11 @@ const Workshops: React.FC = (): React.ReactElement => {
             "http://localhost:8081/api/workshops/" + workshop.id,
             workshop
         )
-            .then(() => {
+            .then(({ data }) => {
+                console.log("Edited the the workshop", data);
                 setWorkshops(
                     workshops.map(w => (w.id === workshop.id ? workshop : w))
                 );
-                setIsAdding(false);
             })
             .catch(err =>
                 console.log("Something happened when trying to edit", err)

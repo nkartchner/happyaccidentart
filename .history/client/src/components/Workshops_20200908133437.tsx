@@ -108,13 +108,14 @@ const useStyles = makeStyles((theme: Theme) =>
             borderRadius: 3,
             width: 0,
             transitionProperty: "width",
-            transitionDelay: "100ms",
-            transitionDuration: "200ms",
+            transitionDelay: "1s",
+            transitionDuration: "2s",
             transitionTimingFunction: "linear",
         },
 
         loaded: {
-            width: 360,
+            maxWidth: 360,
+            width: "auto"
         },
         deleteIcon: {
             marginRight: theme.spacing(2),

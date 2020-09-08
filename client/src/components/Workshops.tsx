@@ -1,19 +1,20 @@
 import React from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { FireCtx } from "../FirestoreContext";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Collapse from "@material-ui/core/Collapse";
-import Fab from "@material-ui/core/Fab";
-import AddIcon from "@material-ui/icons/Add";
+// import Fab from "@material-ui/core/Fab";
+// import AddIcon from "@material-ui/icons/Add";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import axios from "axios";
+import WorkshopForm from "./WorkshopForm";
+import { Workshop } from "../models/workshop";
 const MONTHS = [
     "Jan",
     "Feb",
@@ -81,8 +82,8 @@ const useStyles = makeStyles((theme: Theme) =>
         details: {
             gridColumn: 1,
             display: "flex",
-            flexDirection:"column",
-            alignContent:"center"
+            flexDirection: "column",
+            alignContent: "center",
         },
         detailsDesc: {
             gridColumn: 2,
@@ -107,7 +108,7 @@ const WorkshopDetails: React.FC<any> = ({ e }) => {
                 {isLoading && <CircularProgress />}
                 <img
                     onLoad={handleLoaded}
-                    src={e.coverImg}
+                    src={e.coverImage}
                     className={classes.coverImg}
                     alt="workshop goal"
                 />
@@ -132,24 +133,30 @@ const Workshops: React.FC = (): React.ReactElement => {
         else setOpen(index);
     };
 
-    const firebase = React.useContext(FireCtx);
-    const [events, setEvents] = React.useState<any[]>([]);
+    const [workshops, setWorkshops] = React.useState<Workshop[]>([]);
 
     React.useEffect(() => {
         axios
-            .get("http://localhost:8000/api/workshops")
+            .get<{ workshops: Workshop[] }>(
+                "http://localhost:8081/api/workshops"
+            )
             .then(({ data }) => {
                 console.log(data);
-                setEvents(data);
+                setWorkshops(data.workshops);
             })
             .catch(err => {
                 console.error(err);
             });
-    }, [firebase, setEvents]);
+    }, [setWorkshops]);
+
     return (
-        <>
-            <List aria-labelledby="events" className={classes.eventContainer}>
-                {events.map((e, i) => (
+        <div style={{ padding: 20, overflow: "auto" }}>
+            <WorkshopForm />
+            <List
+                aria-labelledby="workshops"
+                className={classes.eventContainer}
+            >
+                {workshops.map((e, i) => (
                     <React.Fragment key={i}>
                         <ListItem
                             button
@@ -186,10 +193,10 @@ const Workshops: React.FC = (): React.ReactElement => {
                     </React.Fragment>
                 ))}
             </List>
-            <Fab color="primary" aria-label="add" className={classes.addBtn}>
+            {/* <Fab color="primary" aria-label="add" className={classes.addBtn}>
                 <AddIcon />
-            </Fab>
-        </>
+            </Fab> */}
+        </div>
     );
 };
 

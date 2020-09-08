@@ -3,19 +3,19 @@ import path from "path";
 import cors from "cors";
 import { config } from "dotenv";
 import {
-    Sequelize,
     Model,
+    Optional,
+    Sequelize,
     DataTypes,
-    HasManyGetAssociationsMixin,
+    Association,
+    HasOneGetAssociationMixin,
+    HasOneSetAssociationMixin,
     HasManyAddAssociationMixin,
     HasManyHasAssociationMixin,
-    Association,
-    HasManyCountAssociationsMixin,
-    HasManyCreateAssociationMixin,
-    Optional,
-    HasOneGetAssociationMixin,
+    HasManyGetAssociationsMixin,
     HasOneCreateAssociationMixin,
-    HasOneSetAssociationMixin,
+    HasManyCreateAssociationMixin,
+    HasManyCountAssociationsMixin,
 } from "sequelize";
 
 config();
@@ -27,10 +27,23 @@ const sequelize = new Sequelize({
 
 interface AddressAttributes {
     address: string;
+    city: string;
+    state: string;
+    name: string;
+    zipCode: number;
+    id: number;
 }
+interface AddressCreationAttributes extends Optional<AddressAttributes, "id"> {}
 
-class Address extends Model<AddressAttributes> implements AddressAttributes {
+class Address
+    extends Model<AddressAttributes, AddressCreationAttributes>
+    implements AddressAttributes {
     public address!: string;
+    city!: string;
+    state!: string;
+    name!: string;
+    zipCode!: number;
+    public id!: number;
 }
 
 interface WorkshopAttributes {
@@ -40,6 +53,7 @@ interface WorkshopAttributes {
     title: string;
     capacity: number;
     isOnline: boolean;
+    date: Date;
 }
 
 interface WorkshopCreationAttributes
@@ -54,6 +68,7 @@ class Workshop
     public title!: string;
     public capacity!: number;
     public isOnline!: boolean;
+    public date!: Date;
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -85,11 +100,11 @@ class User
     public readonly updatedAt!: Date;
 
     // ! Workshop association methods
+    public countWorkshops!: HasManyCountAssociationsMixin;
     public getWorkshops!: HasManyGetAssociationsMixin<Workshop>;
+    public createWorkshop!: HasManyCreateAssociationMixin<Workshop>;
     public addWorkshop!: HasManyAddAssociationMixin<Workshop, number>;
     public hasWorkshop!: HasManyHasAssociationMixin<Workshop, number>;
-    public countWorkshops!: HasManyCountAssociationsMixin;
-    public createWorkshop!: HasManyCreateAssociationMixin<Workshop>;
     // ! Workshop static association
     public readonly workshops?: Workshop[];
     public static associations: {
@@ -143,6 +158,10 @@ Workshop.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        date: {
+            type: DataTypes.DATE,
+            allowNull: false,
+        },
     },
     { tableName: "workshops", sequelize }
 );
@@ -153,6 +172,15 @@ Address.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        city: DataTypes.STRING,
+        state: DataTypes.STRING,
+        name: DataTypes.STRING,
+        zipCode: DataTypes.NUMBER,
     },
     {
         tableName: "addresses",
@@ -170,7 +198,8 @@ Workshop.belongsToMany(User, { through: "UserWorkshops", onDelete: "cascade" });
 sequelize
     .authenticate()
     .then(async () => {
-        await sequelize.sync({ alter: false });
+        // await sequelize.dropAllSchemas({});
+        await sequelize.sync();
         console.log("Connected to the database");
     })
     .catch(error => console.log("Unable to connect to the database", error));
@@ -252,6 +281,43 @@ app.delete(
     "/api/quotes/:id",
     (_req: Request, res: Response, next: NextFunction) => {
         res.status(200).json({ quotes: {} });
+    }
+);
+
+app.get(
+    "/api/workshops",
+    (_req: Request, res: Response, next: NextFunction) => {
+        Workshop.findAll({ include: Workshop.assiciations.address }).then(
+            workshops => {
+                res.status(200).json({ workshops });
+            }
+        );
+    }
+);
+app.post(
+    "/api/workshops",
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if (!req.body.workshop.isOnline) {
+                await Address.create(req.body.address);
+            }
+            const workshop = await Workshop.create(req.body.workshop);
+            res.status(200).json({ workshop });
+        } catch (error) {
+            return next(error);
+        }
+    }
+);
+app.put(
+    "/api/workshops/:id",
+    (_req: Request, res: Response, next: NextFunction) => {
+        res.status(200).json({ workshops: {} });
+    }
+);
+app.delete(
+    "/api/workshops/:id",
+    (_req: Request, res: Response, next: NextFunction) => {
+        res.status(200).json({ workshops: {} });
     }
 );
 
